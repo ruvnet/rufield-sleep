@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install playwright==1.55.0
-      - run: python -m playwright install --with-deps chromium
-      - run: python tools/check_ui.py
+      - name: Exercise the console on desktop and mobile
+        run: CHROMIUM_PATH="$(command -v google-chrome)" python tools/check_ui.py
   firmware:
     runs-on: ubuntu-latest
     steps:
@@ -32,3 +32,15 @@ jobs:
           arduino-cli core update-index --additional-urls "$index"
           arduino-cli core install esp32:esp32@3.3.2 --additional-urls "$index"
           arduino-cli compile --fqbn esp32:esp32:esp32s3:CDCOnBoot=cdc firmware/sleep_speaker
+  rufield:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ruvnet/rufield
+          ref: 82ffc267617c59b91d32f7fcfc77896988fd0012
+          path: upstream
+          persist-credentials: false
+      - run: cargo build --locked --manifest-path upstream/Cargo.toml -p rufield-viewer
+      - run: python3 tools/check_viewer.py upstream/target/debug/rufield-viewer

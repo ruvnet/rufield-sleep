@@ -2,6 +2,8 @@
 
 A local bedroom console for people who want to tune when their wind down begins and how long their speaker plays. Connect an ESP32 room sensor through RuView and RuField, pair a USB speaker, and keep a separate diary for each person. The first run opens an empty diary and offers a three second pink noise sample on the computer.
 
+![RuField Sleep console showing a fresh local profile](docs/console.png)
+
 ## Run the console
 
 Requires Python 3.10 or newer. The console and browser audio preview use the standard library and browser APIs. USB speaker control supports Linux and macOS.
