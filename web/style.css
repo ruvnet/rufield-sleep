@@ -321,3 +321,17 @@ section[hidden] {
     max-width: 120px;
   }
 }
+
+[hidden] {
+  display: none !important;
+}
+.hosting {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 85ch;
+  margin-bottom: 20px;
+}
+.hosting a {
+  color: var(--lilac);
+  text-underline-offset: 3px;
+}

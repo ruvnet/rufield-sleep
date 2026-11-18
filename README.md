@@ -2,6 +2,8 @@
 
 A local bedroom console for people who want to tune when their wind down begins and how long their speaker plays. Connect an ESP32 room sensor through RuView and RuField, pair a USB speaker, and keep a separate diary for each person. The first run opens an empty diary and offers a three second pink noise sample on the computer.
 
+**[Open the management UI](https://ruvnet.github.io/rufield-sleep/)** to try a profile, log an evening, apply a bedtime suggestion, or play timed pink noise on your device. The browser edition keeps its diary in this tab. In Preferences, select **Download diary** to keep a copy or **Restore diary** to load it again. Real ESP32 sensing and speaker control run in the local console below. The two editions keep separate records.
+
 ![RuField Sleep console showing a fresh local profile](docs/console.png)
 
 ## Run the console

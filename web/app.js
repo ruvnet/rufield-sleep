@@ -1,4 +1,5 @@
 "use strict";
+const hosted = window.ruFieldBrowser;
 const el = (id) => document.getElementById(id);
 let active = 1,
   snapshot,
@@ -63,6 +64,7 @@ function artwork() {
   }
 }
 async function call(action, body) {
+  if (hosted) return hosted.call(action, body);
   const res = await fetch("/api/" + action, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-RuField-Console": "1" },
@@ -75,12 +77,17 @@ async function call(action, body) {
 async function refresh(forms = false) {
   const requested = ++version,
     id = active;
-  const response = await fetch("/api/state?profile=" + id, {
-    cache: "no-store",
-  });
-  const s = await response.json();
+  let s;
+  if (hosted) {
+    s = hosted.state(id);
+  } else {
+    const response = await fetch("/api/state?profile=" + id, {
+      cache: "no-store",
+    });
+    s = await response.json();
+    if (!response.ok) throw Error(s.error);
+  }
   if (requested !== version || id !== active) return;
-  if (!response.ok) throw Error(s.error);
   snapshot = s;
   const p = s.profile,
     f = s.sensor,
@@ -109,6 +116,9 @@ async function refresh(forms = false) {
     : f.enabled
       ? "Waiting for RuField on the configured viewer port."
       : "Connect a local RuField viewer to see room activity.";
+  if (hosted)
+    el("fieldInfo").textContent =
+      "Manage your RuField feed and bed exit detection in the local hardware console.";
   el("usePresence").disabled = !f.presence_at;
   el("sensorBtn").textContent = f.enabled ? "Disconnect feed" : "Connect feed";
   trace(el("signal"), f.history, "#88d6c3");
@@ -117,7 +127,7 @@ async function refresh(forms = false) {
     (output.remaining ? " · " + output.remaining + " s remaining" : "");
   el("usb").textContent = output.connected ? "Disconnect USB" : "Connect USB";
   el("play").disabled = !output.connected || output.remaining > 0 || !p.minutes;
-  el("stop").disabled = !output.connected;
+  el("stop").disabled = hosted ? !output.remaining : !output.connected;
   const rec = s.suggestion;
   el("adopt").hidden = !rec;
   el("suggestion").textContent = rec
@@ -264,24 +274,12 @@ el("preview").onclick = handle(async () => {
     el("preview").textContent = "Hear a sample";
     return;
   }
-  const ctx = new AudioContext();
+  const Audio = window.AudioContext || window.webkitAudioContext;
+  if (!Audio) throw Error("Audio playback is unavailable in this browser.");
+  const ctx = new Audio();
   previewContext = ctx;
   await ctx.resume();
-  const buf = ctx.createBuffer(1, 3 * ctx.sampleRate, ctx.sampleRate),
-    v = buf.getChannelData(0);
-  let b0 = 0,
-    b1 = 0,
-    b2 = 0;
-  for (let i = 0; i < v.length; i++) {
-    const w = Math.random() * 2 - 1;
-    b0 = 0.99765 * b0 + 0.099046 * w;
-    b1 = 0.963 * b1 + 0.2965164 * w;
-    b2 = 0.57 * b2 + 1.0526913 * w;
-    v[i] =
-      Math.max(-1, Math.min(1, (b0 + b1 + b2 + 0.1848 * w) * 0.15)) *
-      0.04 *
-      Math.min(1, i / 2500, (v.length - i) / 5000);
-  }
+  const buf = pinkBuffer(ctx, 3, 0.04, true);
   const src = ctx.createBufferSource();
   src.buffer = buf;
   src.connect(ctx.destination);
@@ -327,3 +325,60 @@ el("usePresence").onclick = handle(async () => {
     "Review the observed room time, then save if it matches your bedtime.",
   );
 });
+
+function pinkBuffer(ctx, seconds, amplitude, fade) {
+  const buffer = ctx.createBuffer(
+    1,
+    Math.round(seconds * ctx.sampleRate),
+    ctx.sampleRate,
+  );
+  const samples = buffer.getChannelData(0);
+  let b0 = 0,
+    b1 = 0,
+    b2 = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const w = Math.random() * 2 - 1;
+    b0 = 0.99765 * b0 + 0.099046 * w;
+    b1 = 0.963 * b1 + 0.2965164 * w;
+    b2 = 0.57 * b2 + 1.0526913 * w;
+    const envelope = fade
+      ? Math.min(1, i / 2500, (samples.length - i) / 5000)
+      : 1;
+    samples[i] =
+      Math.max(-1, Math.min(1, (b0 + b1 + b2 + 0.1848 * w) * 0.15)) *
+      amplitude *
+      envelope;
+  }
+  return buffer;
+}
+if (hosted) {
+  el("edition").textContent = "BROWSER CONSOLE";
+  el("footerEdition").textContent = "Browser edition";
+  el("hostingNote").hidden = el("diaryFiles").hidden = false;
+  el("outputTitle").textContent = "This device";
+  for (const id of ["sensorBtn", "usePresence", "presenceHelp", "usb"])
+    el(id).hidden = true;
+  el("guard").closest("label").hidden = true;
+  el("guard").checked = false;
+  el("exportDiary").onclick = handle(() => hosted.download());
+  el("importDiary").onclick = () => el("diaryFile").click();
+  el("diaryFile").onchange = handle(async () => {
+    const input = el("diaryFile"),
+      file = input.files[0];
+    input.value = "";
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024)
+      throw Error("Choose a diary file smaller than 4 MB.");
+    const restored = hosted.parse(await file.text());
+    if (
+      !confirm(
+        "Replace the profiles and diary entries in this tab with the downloaded copy?",
+      )
+    )
+      return;
+    await hosted.restore(restored);
+    active = 1;
+    await refresh(true);
+    message("Diary restored in this tab.");
+  });
+}

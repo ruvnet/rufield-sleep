@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#101323" />
     <title>RuField Sleep</title>
-    <link rel="stylesheet" href="/style.css" />
-    <script defer src="/app.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+    <script defer src="./app.js"></script>
   </head>
   <body>
     <header>
-      <a href="/" class="brand"
+      <a href="./" class="brand"
         ><span class="moon"></span>RuField <b>Sleep</b></a
       ><label class="profile"
         >Profile
@@ -20,12 +20,26 @@
     <main>
       <section class="intro">
         <div>
-          <p class="eyebrow">BEDROOM CONSOLE</p>
+          <p class="eyebrow" id="edition">BEDROOM CONSOLE</p>
           <h1>Your evening routine</h1>
           <p class="sub">Settle in with a sound and timing that suit you.</p>
         </div>
         <canvas id="wave" width="480" height="150" aria-hidden="true"></canvas>
       </section>
+      <p id="hostingNote" class="hosting" hidden>
+        Profiles and evenings stay in this tab. For connected ESP32 equipment,
+        <a
+          href="http://127.0.0.1:8787/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >open your local console</a
+        >
+        or read the
+        <a
+          href="https://github.com/ruvnet/rufield-sleep/blob/main/docs/hardware.md"
+          >hardware setup guide</a
+        >.
+      </p>
       <div class="tabs" aria-label="Sections">
         <button data-tab="room" aria-pressed="true">Room</button
         ><button data-tab="diary" aria-pressed="false">Sleep diary</button
@@ -68,7 +82,7 @@
           </article>
           <article class="card">
             <p class="eyebrow amber">SPEAKER</p>
-            <h2>Bedside output</h2>
+            <h2 id="outputTitle">Bedside output</h2>
             <p id="speakerInfo" class="muted">Checking USB connection…</p>
             <label class="check"
               ><input id="guard" type="checkbox" /> Stop on bed exit or loss of
@@ -99,7 +113,7 @@
             <button id="usePresence" type="button" disabled>
               Use recent room presence time
             </button>
-            <p class="muted">
+            <p class="muted" id="presenceHelp">
               Use this only if the room observation matches your own bedtime.
             </p>
             <form id="nightForm">
@@ -184,11 +198,29 @@
               Diary entries stay on this computer. Each profile has its own
               history.
             </p>
+            <div id="diaryFiles" hidden>
+              <p>
+                Download a copy to keep your profiles and evenings after closing
+                this tab. The file contains your diary in plain text.
+              </p>
+              <div class="actions">
+                <button id="exportDiary">Download diary</button
+                ><button id="importDiary">Restore diary</button
+                ><input
+                  id="diaryFile"
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                />
+              </div>
+            </div>
             <button id="forget" class="danger">Erase this diary</button>
           </article>
         </div>
       </section>
-      <footer>RuField Sleep <span>Local bedroom console</span></footer>
+      <footer>
+        RuField Sleep <span id="footerEdition">Local bedroom console</span>
+      </footer>
     </main>
   </body>
 </html>
