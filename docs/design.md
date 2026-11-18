@@ -1,0 +1,13 @@
+# Decision 001 · Personal sleep routines
+
+A single local host manages one bedroom, a RuField viewer feed and a USB speaker. Profiles represent deliberate user selection. Ambient signals do not assign identities. The local operating system account is the trust boundary. Anyone with access to it can view or edit the diaries.
+
+The console reads the upstream viewer's `/api/source` and `/events` interfaces at RuField revision `82ffc267617c59b91d32f7fcfc77896988fd0012`. The viewer owns sensor enrollment, trust verification, replay protection and privacy filtering. This console retains event counts in memory. A production frame with a verified event may supply an allowlisted presence or bed exit inference at confidence 0.80 or above. This is a configurable-in-code product threshold without a measured sleep accuracy claim. A presence timestamp uses the host receipt time and expires after two minutes. A stale feed becomes unusable after eight seconds. Event counts indicate feed activity, not movement intensity.
+
+The diary stores one row per profile per local evening date. Saving the same date replaces that entry. It stores only the confirmed local time, minutes of audio and a subjective comfort rating. Network frames, serial traffic and microphone recordings are never written to the diary. SQLite runs locally under the user's file permissions. Erase this diary deletes that profile's evening rows; it does not erase operating system backups or reset saved preferences. The service binds to IPv4 loopback, checks Host and Origin on writes, and ships its own UI assets. It is intended for a trusted local user, without a public reverse proxy.
+
+Bedtime inference selects the observed time with the smallest sum of circular distances to the other entries. The median distance must be at most 90 minutes. Ties favor the most recent observation. Sound duration uses the median of at least three comfortable evenings. Neither algorithm estimates sleep quality or causal effects. Every preference update requires an explicit save or apply action.
+
+Physical speaker control requires an identifying handshake and an acknowledgement for each command. A local lease on the S3 and an independent maximum runtime bound playback even if the host fails. A lost connection or expired timer requires a new manual start. The USB protocol trusts local physical access. The firmware includes no WiFi credentials or network listener.
+
+To roll back software, stop playback, disconnect the speaker, and check out the desired prior commit. Back up the SQLite file with the console stopped before testing a future schema change.

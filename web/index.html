@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101323" />
+    <title>RuField Sleep</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="/" class="brand"
+        ><span class="moon"></span>RuField <b>Sleep</b></a
+      ><label class="profile"
+        >Profile
+        <select id="profiles" aria-label="Active profile"></select
+      ></label>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">BEDROOM CONSOLE</p>
+          <h1>Your evening routine</h1>
+          <p class="sub">Settle in with a sound and timing that suit you.</p>
+        </div>
+        <canvas id="wave" width="480" height="150" aria-hidden="true"></canvas>
+      </section>
+      <div class="tabs" aria-label="Sections">
+        <button data-tab="room" aria-pressed="true">Room</button
+        ><button data-tab="diary" aria-pressed="false">Sleep diary</button
+        ><button data-tab="settings" aria-pressed="false">Preferences</button>
+      </div>
+      <p id="notice" role="status"></p>
+      <section id="room" class="pane">
+        <div class="grid">
+          <article class="card hero">
+            <p class="eyebrow">TONIGHT</p>
+            <h2 id="who">Wind down</h2>
+            <div class="bed" id="bed">··:··</div>
+            <p class="muted">Preferred local bedtime</p>
+            <div class="rule"></div>
+            <div class="metrics">
+              <div><small>Sound</small><strong>Pink noise</strong></div>
+              <div><small>Timer</small><strong id="timer">…</strong></div>
+              <div><small>Level</small><strong id="gain">…</strong></div>
+            </div>
+            <div class="actions">
+              <button class="primary" id="preview">Hear a sample</button
+              ><button data-tab="settings">Edit routine</button>
+            </div>
+            <small id="previewStatus"
+              >The sample plays on this device for 3 seconds.</small
+            >
+          </article>
+          <article class="card">
+            <p class="eyebrow mint">ROOM SENSOR</p>
+            <h2>RuField feed</h2>
+            <p><span id="mode" class="pill">Disconnected</span></p>
+            <canvas
+              id="signal"
+              width="600"
+              height="94"
+              aria-label="Events per recent RuField frame"
+            ></canvas>
+            <p class="muted" id="fieldInfo">Waiting for a frame.</p>
+            <button id="sensorBtn">Connect feed</button>
+          </article>
+          <article class="card">
+            <p class="eyebrow amber">SPEAKER</p>
+            <h2>Bedside output</h2>
+            <p id="speakerInfo" class="muted">Checking USB connection…</p>
+            <label class="check"
+              ><input id="guard" type="checkbox" /> Stop on bed exit or loss of
+              live sensor</label
+            >
+            <div class="actions">
+              <button id="usb">Connect USB</button
+              ><button id="play" class="primary">Play routine</button
+              ><button id="stop">Stop</button>
+            </div>
+          </article>
+          <article class="card">
+            <p class="eyebrow">PERSONALIZATION</p>
+            <h2>Your usual bedtime</h2>
+            <p id="suggestion" class="muted"></p>
+            <div class="actions">
+              <button id="adopt" hidden>Apply suggestion</button
+              ><button data-tab="diary">Open diary</button>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section id="diary" class="pane" hidden>
+        <div class="grid">
+          <article class="card">
+            <p class="eyebrow">MORNING CHECK IN</p>
+            <h2>Log an evening</h2>
+            <button id="usePresence" type="button" disabled>
+              Use recent room presence time
+            </button>
+            <p class="muted">
+              Use this only if the room observation matches your own bedtime.
+            </p>
+            <form id="nightForm">
+              <label
+                >Evening date<input name="date" type="date" required /></label
+              ><label
+                >Actual bedtime<input
+                  name="bedtime"
+                  type="time"
+                  required /></label
+              ><label
+                >Sound used, minutes<input
+                  name="minutes"
+                  type="number"
+                  min="0"
+                  max="30"
+                  required /></label
+              ><label
+                >Sound comfort<select name="comfort">
+                  <option value="1">1 · Uncomfortable</option>
+                  <option value="2">2 · Somewhat uncomfortable</option>
+                  <option value="3" selected>3 · Neutral</option>
+                  <option value="4">4 · Comfortable</option>
+                  <option value="5">5 · Very comfortable</option>
+                </select></label
+              ><button class="primary">Save evening</button>
+            </form>
+          </article>
+          <article class="card">
+            <p class="eyebrow mint">HISTORY</p>
+            <h2>Recent evenings</h2>
+            <div id="history"></div>
+          </article>
+        </div>
+      </section>
+      <section id="settings" class="pane" hidden>
+        <div class="grid">
+          <article class="card">
+            <p class="eyebrow">ROUTINE</p>
+            <h2>Wind down preferences</h2>
+            <form id="routineForm">
+              <label
+                >Preferred bedtime<input
+                  name="bedtime"
+                  type="time"
+                  required /></label
+              ><label
+                >Sound duration in minutes<input
+                  type="number"
+                  name="minutes"
+                  min="0"
+                  max="30"
+                  required /></label
+              ><label
+                >Speaker level (1 to 10)<input
+                  type="number"
+                  name="level"
+                  min="1"
+                  max="10"
+                  required
+              /></label>
+              <p class="muted">
+                A duration of 0 keeps the room silent. Start each session from
+                the Room tab.
+              </p>
+              <button class="primary">Save routine</button>
+            </form>
+          </article>
+          <article class="card">
+            <p class="eyebrow amber">LOCAL PROFILES</p>
+            <h2>People in this room</h2>
+            <form id="newForm">
+              <label
+                >New profile name<input
+                  name="name"
+                  maxlength="50"
+                  required /></label
+              ><button>Create profile</button>
+            </form>
+            <div class="rule"></div>
+            <p class="muted">
+              Diary entries stay on this computer. Each profile has its own
+              history.
+            </p>
+            <button id="forget" class="danger">Erase this diary</button>
+          </article>
+        </div>
+      </section>
+      <footer>RuField Sleep <span>Local bedroom console</span></footer>
+    </main>
+  </body>
+</html>
